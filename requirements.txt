@@ -1,6 +1,0 @@
-streamlit
-pandas
-openpyxl
-numpy
-matplotlib
-tkinder
