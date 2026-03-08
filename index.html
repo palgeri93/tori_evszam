@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Történelem évszámgyakorló</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: rgba(255,255,255,0.94);
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #2563eb;
+      --primary-2: #1d4ed8;
+      --ok: #15803d;
+      --bad: #b91c1c;
+      --border: #dbe4f0;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #e2e8f0;
+      background:
+        radial-gradient(circle at top left, rgba(245,158,11,0.18), transparent 25%),
+        radial-gradient(circle at top right, rgba(37,99,235,0.22), transparent 24%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 90px;
+    }
+
+    .hero {
+      background: linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 16px 50px rgba(2, 6, 23, 0.28);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #cbd5e1;
+      max-width: 820px;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.08);
+      color: #f8fafc;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 6px 10px;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      color: var(--text);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .panel {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .panel h2, .quiz h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+    }
+
+    .group { margin-bottom: 16px; }
+
+    .group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    .help {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 7px;
+    }
+
+    input, select, button {
+      font: inherit;
+    }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.14);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    .status-box {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 16px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      box-shadow: 0 12px 24px rgba(37,99,235,0.26);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+      margin-top: 10px;
+    }
+
+    .quiz {
+      padding: 22px;
+      min-height: 560px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+
+    .stat .value {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .question-card {
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 22px;
+      margin-top: 8px;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pill.topic { background: #dbeafe; color: #1d4ed8; }
+    .pill.ct { background: #fef3c7; color: #92400e; }
+    .pill.type { background: #e2e8f0; color: #334155; }
+
+    .question-title {
+      font-size: clamp(20px, 3vw, 28px);
+      line-height: 1.3;
+      margin: 10px 0 18px;
+      color: #0f172a;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice-btn {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      border-color: #93c5fd;
+      box-shadow: 0 8px 18px rgba(148,163,184,.18);
+      transform: translateY(-1px);
+    }
+
+    .choice-btn.correct {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    .choice-btn.wrong {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
+    }
+
+    .answer-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .answer-form input {
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+
+    .inline-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 800;
+      background: var(--primary);
+      color: white;
+    }
+
+    .ghost {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: #0f172a;
+    }
+
+    .feedback {
+      margin-top: 16px;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .feedback.ok { display: block; background: #f0fdf4; color: var(--ok); border: 1px solid #86efac; }
+    .feedback.bad { display: block; background: #fef2f2; color: var(--bad); border: 1px solid #fca5a5; }
+    .feedback.info { display: block; background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+    .subtle {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .next-row {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      padding: 34px 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .footer {
+      text-align: center;
+      color: #cbd5e1;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+
+    .legend {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .stats, .row-2 { grid-template-columns: 1fr; }
+      .hero, .panel, .quiz { padding: 18px; }
+      .question-card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Történelem évszámgyakorló</h1>
+      <p>
+        Játékos gyakorlóalkalmazás felső tagozatos diákoknak. Az oldal induláskor automatikusan beolvassa
+        az <strong>adatok.xlsx</strong> fájlt, majd a megadott szűrők szerint készít feladatokat.
+      </p>
+      <div class="badge">Automatikus Excel-betöltés • GitHub Pages-kompatibilis</div>
+    </section>
+
+    <div class="layout">
+      <aside class="card panel">
+        <h2>Beállítások</h2>
+
+        <div class="group">
+          <label>Adatforrás</label>
+          <div class="status-box">
+            <div id="loadStatus"><strong>Betöltés folyamatban...</strong></div>
+            <div class="legend">
+              Az alkalmazás kizárólag az ugyanebben a mappában lévő <strong>adatok.xlsx</strong> fájlt használja.
+              Kézi feltöltés nincs bekapcsolva.
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <label for="topicFilter">Témakör</label>
+          <select id="topicFilter">
+            <option value="mind">Mindkettő</option>
+            <option value="magyar">Magyar történelem</option>
+            <option value="egyetemes">Egyetemes történelem</option>
+          </select>
+        </div>
+
+        <div class="row-2">
+          <div class="group">
+            <label for="yearFrom">Időszak tól</label>
+            <input id="yearFrom" type="number" placeholder="pl. -500 vagy 1526" />
+            <div class="help">Kr.e. évszámhoz negatív számot adj meg.</div>
+          </div>
+          <div class="group">
+            <label for="yearTo">Időszak ig</label>
+            <input id="yearTo" type="number" placeholder="pl. 1918" />
+          </div>
+        </div>
+
+        <div class="group">
+          <label for="taskType">Feladattípus</label>
+          <select id="taskType">
+            <option value="1">1. Jelöld meg a helyes évszámot</option>
+            <option value="2">2. Írd be a helyes évszámot</option>
+            <option value="3">3. Jelöld meg a helyes eseményt</option>
+            <option value="4">4. Random (kevert)</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label for="questionCount">Kérdések száma</label>
+          <input id="questionCount" type="number" min="4" max="9999" value="20" />
+          <div class="help">A szűrt rekordokból véletlenszerűen választ a program.</div>
+        </div>
+
+        <div class="group checkbox-row">
+          <input id="mandatoryOnly" type="checkbox" />
+          <label for="mandatoryOnly" style="margin:0;font-weight:700;">Csak kötelező kerettantervi évszámok</label>
+        </div>
+
+        <button class="btn btn-primary" id="startBtn">Gyakorlás indítása</button>
+        <button class="btn btn-secondary" id="restartBtn">Aktuális beállítások újratöltése</button>
+      </aside>
+
+      <main class="card quiz">
+        <h2>Feladat</h2>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Betöltött rekord</div>
+            <div class="value" id="statLoaded">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Szűrt rekord</div>
+            <div class="value" id="statFiltered">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Pontszám</div>
+            <div class="value" id="statScore">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Kérdések</div>
+            <div class="value" id="statProgress">0 / 0</div>
+          </div>
+        </div>
+
+        <div id="quizArea">
+          <div class="empty-state">
+            <p><strong>Az adatok beolvasása folyamatban van.</strong></p>
+            <p>Ha a betöltés sikeres, a gyakorlás azonnal indítható lesz.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="footer">Készítette Makra Lajos, Pálfi Tamás, Kenéz Bence 2026.</div>
+  </div>
+
+  <script>
+    const state = {
+      allRecords: [],
+      activePool: [],
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      currentQuestion: null,
+      answered: false,
+      defaultFileName: 'adatok.xlsx'
+    };
+
+    const els = {
+      topicFilter: document.getElementById('topicFilter'),
+      yearFrom: document.getElementById('yearFrom'),
+      yearTo: document.getElementById('yearTo'),
+      taskType: document.getElementById('taskType'),
+      questionCount: document.getElementById('questionCount'),
+      mandatoryOnly: document.getElementById('mandatoryOnly'),
+      startBtn: document.getElementById('startBtn'),
+      restartBtn: document.getElementById('restartBtn'),
+      loadStatus: document.getElementById('loadStatus'),
+      statLoaded: document.getElementById('statLoaded'),
+      statFiltered: document.getElementById('statFiltered'),
+      statScore: document.getElementById('statScore'),
+      statProgress: document.getElementById('statProgress'),
+      quizArea: document.getElementById('quizArea')
+    };
+
+    function normalizeTopic(value) {
+      const v = String(value ?? '').trim().toLowerCase();
+      if (v.includes('magyar')) return 'magyar';
+      if (v.includes('egyetemes')) return 'egyetemes';
+      return v;
+    }
+
+    function normalizeMandatory(value) {
+      return String(value ?? '').trim().toLowerCase() === 'x';
+    }
+
+    function extractRange(raw) {
+      if (raw === null || raw === undefined) return null;
+      let text = String(raw).trim();
+      if (!text) return null;
+
+      text = text
+        .replace(/–/g, '-')
+        .replace(/—/g, '-')
+        .replace(/−/g, '-')
+        .replace(/\s+/g, '');
+
+      const nums = text.match(/-?\d+/g);
+      if (!nums || nums.length === 0) return null;
+
+      if (nums.length === 1) {
+        const y = Number(nums[0]);
+        if (Number.isNaN(y)) return null;
+        return { start: y, end: y };
+      }
+
+      const first = Number(nums[0]);
+      const second = Number(nums[1]);
+      if (Number.isNaN(first) || Number.isNaN(second)) return null;
+      return { start: Math.min(first, second), end: Math.max(first, second) };
+    }
+
+    function formatYearValue(num) {
+      if (typeof num !== 'number' || Number.isNaN(num)) return '';
+      return num < 0 ? `Kr.e. ${Math.abs(num)}` : `${num}`;
+    }
+
+    function formatYearRange(raw) {
+      const range = extractRange(raw);
+      if (!range) return String(raw ?? '');
+      if (range.start === range.end) return formatYearValue(range.start);
+      return `${formatYearValue(range.start)}–${formatYearValue(range.end)}`;
+    }
+
+    function looksLikeHeaderRow(row) {
+      if (!Array.isArray(row) || row.length < 3) return false;
+      const joined = row.map(v => String(v ?? '').toLowerCase()).join(' | ');
+      return joined.includes('témakör') || joined.includes('temakor') || joined.includes('évszám') || joined.includes('evszam') || joined.includes('esemény') || joined.includes('esemeny');
+    }
+
+    function buildRecordFromArrayRow(row, index) {
+      if (!Array.isArray(row)) return null;
+      const topic = normalizeTopic(row[0] ?? '');
+      const yearRaw = row[1] ?? '';
+      const event = String(row[2] ?? '').trim();
+      const mandatory = normalizeMandatory(row[3] ?? '');
+      const range = extractRange(yearRaw);
+
+      if (!topic || !event || !String(yearRaw).trim() || !range) return null;
+
+      return {
+        id: `${index}-${event}-${String(yearRaw)}`,
+        topic,
+        yearRaw: String(yearRaw).trim(),
+        yearDisplay: formatYearRange(yearRaw),
+        event,
+        mandatory,
+        start: range.start,
+        end: range.end
+      };
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function capitalize(text) {
+      if (!text) return '';
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function updateStats(filteredCount = state.activePool.length) {
+      els.statLoaded.textContent = state.allRecords.length;
+      els.statFiltered.textContent = filteredCount || 0;
+      els.statScore.textContent = state.score;
+      els.statProgress.textContent = `${Math.min(state.currentIndex, state.questions.length)} / ${state.questions.length}`;
+    }
+
+    async function loadDefaultFile() {
+      els.loadStatus.innerHTML = '<strong>Az adatok.xlsx betöltése...</strong>';
+      try {
+        const response = await fetch(state.defaultFileName, { cache: 'no-store' });
+        if (!response.ok) throw new Error('Nem található az adatok.xlsx fájl.');
+
+        const buffer = await response.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+        const dataRows = looksLikeHeaderRow(rows[0]) ? rows.slice(1) : rows;
+        const records = dataRows.map(buildRecordFromArrayRow).filter(Boolean);
+
+        state.allRecords = records;
+        updateStats();
+
+        if (!records.length) {
+          els.loadStatus.innerHTML = '<strong>Az Excel fájl betöltődött, de nem találtam értelmezhető rekordot.</strong>';
+          els.quizArea.innerHTML = `
+            <div class="empty-state">
+              <p><strong>Nincs használható adat.</strong></p>
+              <p>Ellenőrizd, hogy az első munkalapon az oszlopok sorrendje ez legyen: A = témakör, B = évszám, C = esemény, D = x vagy üres.</p>
+            </div>
+          `;
+          return;
+        }
+
+        els.loadStatus.innerHTML = `<strong>Sikeres automatikus betöltés:</strong> ${records.length} rekord az <strong>adatok.xlsx</strong> fájlból.`;
+        els.quizArea.innerHTML = `
+          <div class="empty-state">
+            <p><strong>Minden készen áll.</strong></p>
+            <p>Állítsd be a szűrőket, majd kattints a <strong>Gyakorlás indítása</strong> gombra.</p>
+          </div>
+        `;
+      } catch (error) {
+        console.error(error);
+        state.allRecords = [];
+        updateStats(0);
+        els.loadStatus.innerHTML = '<strong>Nem sikerült automatikusan betölteni az adatok.xlsx fájlt.</strong>';
+        els.quizArea.innerHTML = `
+          <div class="empty-state">
+            <p><strong>Hiányzik vagy nem elérhető az adatok.xlsx.</strong></p>
+            <p>Tedd az Excel fájlt ugyanabba a GitHub mappába, mint az <strong>index.html</strong> fájlt.</p>
+          </div>
+        `;
+      }
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function sample(array, count, excludeIds = new Set()) {
+      return shuffle(array.filter(item => !excludeIds.has(item.id))).slice(0, count);
+    }
+
+    function recordMatchesFilters(record) {
+      const topic = els.topicFilter.value;
+      const fromRaw = els.yearFrom.value;
+      const toRaw = els.yearTo.value;
+      const mandatoryOnly = els.mandatoryOnly.checked;
+
+      if (topic !== 'mind' && record.topic !== topic) return false;
+      if (mandatoryOnly && !record.mandatory) return false;
+
+      let from = fromRaw === '' ? Number.NEGATIVE_INFINITY : Number(fromRaw);
+      let to = toRaw === '' ? Number.POSITIVE_INFINITY : Number(toRaw);
+      if (Number.isNaN(from)) from = Number.NEGATIVE_INFINITY;
+      if (Number.isNaN(to)) to = Number.POSITIVE_INFINITY;
+      if (from > to) [from, to] = [to, from];
+
+      return record.end >= from && record.start <= to;
+    }
+
+    function randomTaskType() {
+      const types = ['1', '2', '3'];
+      return types[Math.floor(Math.random() * types.length)];
+    }
+
+    function buildQuestionForRecord(record, pool) {
+      const selectedType = els.taskType.value === '4' ? randomTaskType() : els.taskType.value;
+
+      if (selectedType === '1') {
+        const distractors = sample(
+          pool.filter(item => item.yearDisplay !== record.yearDisplay),
+          3,
+          new Set([record.id])
+        ).map(item => item.yearDisplay);
+
+        const choices = shuffle([record.yearDisplay, ...distractors]).slice(0, 4);
+        while (choices.length < 4 && pool.length > choices.length) {
+          const extra = shuffle(pool).find(item => !choices.includes(item.yearDisplay));
+          if (!extra) break;
+          choices.push(extra.yearDisplay);
+        }
+
+        return {
+          record,
+          taskType: selectedType,
+          prompt: 'Jelöld meg a helyes évszámot!',
+          questionText: record.event,
+          correctAnswer: record.yearDisplay,
+          choices: shuffle(choices)
+        };
+      }
+
+      if (selectedType === '2') {
+        return {
+          record,
+          taskType: selectedType,
+          prompt: 'Írd be a helyes évszámot!',
+          questionText: record.event,
+          correctAnswer: record.yearDisplay
+        };
+      }
+
+      const distractors = sample(
+        pool.filter(item => item.event !== record.event),
+        3,
+        new Set([record.id])
+      ).map(item => item.event);
+
+      const choices = shuffle([record.event, ...distractors]).slice(0, 4);
+      while (choices.length < 4 && pool.length > choices.length) {
+        const extra = shuffle(pool).find(item => !choices.includes(item.event));
+        if (!extra) break;
+        choices.push(extra.event);
+      }
+
+      return {
+        record,
+        taskType: selectedType,
+        prompt: 'Jelöld meg a helyes eseményt!',
+        questionText: record.yearDisplay,
+        correctAnswer: record.event,
+        choices: shuffle(choices)
+      };
+    }
+
+    function buildQuestions(pool) {
+      const desiredCount = Math.max(4, Math.min(Number(els.questionCount.value) || 20, pool.length));
+      const selected = shuffle(pool).slice(0, desiredCount);
+      return selected.map(record => buildQuestionForRecord(record, pool));
+    }
+
+    function taskTypeLabel(type) {
+      if (type === '1') return 'Helyes évszám kiválasztása';
+      if (type === '2') return 'Évszám beírása';
+      return 'Helyes esemény kiválasztása';
+    }
+
+    function compareAnswers(userAnswer, correctAnswer) {
+      const normalize = (value) => String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/–/g, '-')
+        .replace(/—/g, '-')
+        .replace(/−/g, '-')
+        .replace(/^kr\.e\./, 'kr.e.');
+
+      const a = normalize(userAnswer);
+      const b = normalize(correctAnswer);
+      if (a === b) return true;
+
+      const userRange = extractRange(userAnswer);
+      const correctRange = extractRange(correctAnswer);
+      return !!userRange && !!correctRange && userRange.start === correctRange.start && userRange.end === correctRange.end;
+    }
+
+    function showFeedback(type, html) {
+      const box = document.getElementById('feedbackBox');
+      const nextRow = document.getElementById('nextRow');
+      if (!box || !nextRow) return;
+      box.className = `feedback ${type}`;
+      box.innerHTML = html;
+      nextRow.style.display = 'flex';
+    }
+
+    function renderCurrentQuestion() {
+      updateStats(state.activePool.length);
+
+      if (!state.questions.length) {
+        els.quizArea.innerHTML = `
+          <div class="empty-state">
+            <p><strong>Nincs megjeleníthető kérdés.</strong></p>
+            <p>Ellenőrizd a szűrőket, vagy az Excel fájl tartalmát.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.currentIndex >= state.questions.length) {
+        const percent = Math.round((state.score / state.questions.length) * 100);
+        els.quizArea.innerHTML = `
+          <div class="question-card">
+            <div class="pill-row">
+              <span class="pill type">Gyakorlás vége</span>
+            </div>
+            <div class="question-title">Szép munka! A gyakorlás befejeződött.</div>
+            <p class="subtle">Eredményed: <strong>${state.score}</strong> / <strong>${state.questions.length}</strong> (${percent}%).</p>
+            <div class="next-row">
+              <button class="inline-btn" onclick="restartQuiz()">Újraindítás azonos beállításokkal</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const q = state.questions[state.currentIndex];
+      state.currentQuestion = q;
+      state.answered = false;
+
+      let content = `
+        <div class="question-card">
+          <div class="pill-row">
+            <span class="pill topic">${capitalize(q.record.topic)}</span>
+            <span class="pill type">${taskTypeLabel(q.taskType)}</span>
+            ${q.record.mandatory ? '<span class="pill ct">Kerettantervi</span>' : ''}
+          </div>
+          <div class="subtle">${q.prompt}</div>
+          <div class="question-title">${escapeHtml(q.questionText)}</div>
+      `;
+
+      if (q.taskType === '2') {
+        content += `
+          <div class="answer-form">
+            <input id="typedAnswer" type="text" placeholder="Pl. 896 vagy Kr.e. 44 vagy 1848-1849" autocomplete="off" />
+            <button class="inline-btn" onclick="submitTypedAnswer()">Ellenőrzés</button>
+          </div>
+        `;
+      } else {
+        content += '<div class="choices">';
+        q.choices.forEach((choice, index) => {
+          content += `<button class="choice-btn" data-choice-index="${index}">${escapeHtml(choice)}</button>`;
+        });
+        content += '</div>';
+      }
+
+      content += `
+          <div id="feedbackBox" class="feedback"></div>
+          <div class="next-row" id="nextRow" style="display:none;">
+            <button class="inline-btn" onclick="nextQuestion()">Következő kérdés</button>
+            <button class="inline-btn ghost" onclick="restartQuiz()">Újrakezdés</button>
+          </div>
+        </div>
+      `;
+
+      els.quizArea.innerHTML = content;
+
+      if (q.taskType !== '2') {
+        document.querySelectorAll('.choice-btn').forEach(button => {
+          button.addEventListener('click', () => {
+            const index = Number(button.dataset.choiceIndex);
+            const choice = q.choices[index];
+            submitChoice(button, choice);
+          });
+        });
+      }
+    }
+
+    function submitChoice(button, choice) {
+      if (state.answered) return;
+      state.answered = true;
+
+      const q = state.currentQuestion;
+      const buttons = Array.from(document.querySelectorAll('.choice-btn'));
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === q.correctAnswer) btn.classList.add('correct');
+      });
+
+      const correct = compareAnswers(choice, q.correctAnswer);
+      if (correct) {
+        state.score += 1;
+        button.classList.add('correct');
+        showFeedback('ok', `Helyes válasz! A megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
+      } else {
+        button.classList.add('wrong');
+        showFeedback('bad', `Nem ez a helyes válasz. A jó megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
+      }
+      updateStats(state.activePool.length);
+    }
+
+    function submitTypedAnswer() {
+      if (state.answered) return;
+      const input = document.getElementById('typedAnswer');
+      const userAnswer = input?.value ?? '';
+      if (!userAnswer.trim()) {
+        showFeedback('info', 'Írj be egy évszámot vagy évszámtartományt.');
+        return;
+      }
+
+      state.answered = true;
+      const q = state.currentQuestion;
+      const correct = compareAnswers(userAnswer, q.correctAnswer);
+      if (input) input.disabled = true;
+
+      if (correct) {
+        state.score += 1;
+        showFeedback('ok', `Helyes válasz! A megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
+      } else {
+        showFeedback('bad', `Sajnos nem pontos. A jó megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
+      }
+      updateStats(state.activePool.length);
+    }
+
+    function nextQuestion() {
+      state.currentIndex += 1;
+      renderCurrentQuestion();
+    }
+
+    function startQuiz() {
+      if (!state.allRecords.length) {
+        els.quizArea.innerHTML = `
+          <div class="empty-state">
+            <p><strong>Még nincs betöltött adat.</strong></p>
+            <p>Az alkalmazás csak az automatikusan elérhető <strong>adatok.xlsx</strong> fájlból dolgozik.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const filtered = state.allRecords.filter(recordMatchesFilters);
+      state.activePool = filtered;
+      state.questions = [];
+      state.currentIndex = 0;
+      state.score = 0;
+      updateStats(filtered.length);
+
+      if (filtered.length < 4) {
+        els.quizArea.innerHTML = `
+          <div class="empty-state">
+            <p><strong>Túl kevés rekord maradt a szűrés után.</strong></p>
+            <p>Legalább <strong>4</strong> rekord szükséges a feleletválasztós kérdésekhez.</p>
+          </div>
+        `;
+        return;
+      }
+
+      state.questions = buildQuestions(filtered);
+      renderCurrentQuestion();
+    }
+
+    function restartQuiz() {
+      startQuiz();
+    }
+
+    window.submitTypedAnswer = submitTypedAnswer;
+    window.nextQuestion = nextQuestion;
+    window.restartQuiz = restartQuiz;
+
+    els.startBtn.addEventListener('click', startQuiz);
+    els.restartBtn.addEventListener('click', startQuiz);
+
+    loadDefaultFile();
+  </script>
+</body>
+</html>
