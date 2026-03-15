@@ -3,36 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Történelem évszámgyakorló</title>
+  <title>Történelem - évszámok gyakorlása</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg1: #0f172a;
       --bg2: #1e293b;
-      --card: rgba(255,255,255,0.95);
+      --card: rgba(255, 255, 255, 0.96);
       --text: #0f172a;
       --muted: #475569;
       --primary: #2563eb;
-      --primary-2: #1d4ed8;
-      --ok: #15803d;
-      --bad: #b91c1c;
-      --warn: #92400e;
+      --primary2: #1d4ed8;
+      --success: #15803d;
+      --danger: #b91c1c;
+      --warning: #92400e;
       --border: #dbe4f0;
       --shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
       --radius: 22px;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
       color: #e2e8f0;
       background:
-        radial-gradient(circle at top left, rgba(245,158,11,0.18), transparent 25%),
-        radial-gradient(circle at top right, rgba(37,99,235,0.22), transparent 24%),
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.22), transparent 24%),
         linear-gradient(135deg, var(--bg1), var(--bg2));
       min-height: 100vh;
     }
-    .container { max-width: 1180px; margin: 0 auto; padding: 28px 18px 90px; }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 88px;
+    }
+
     .hero {
       background: linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
       border: 1px solid rgba(255,255,255,0.12);
@@ -42,129 +50,384 @@
       box-shadow: 0 16px 50px rgba(2, 6, 23, 0.28);
       margin-bottom: 20px;
     }
-    .hero h1 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.1; }
-    .hero p { margin: 0; color: #cbd5e1; max-width: 860px; line-height: 1.65; font-size: 16px; }
-    .badge {
-      display: inline-block; background: rgba(255,255,255,0.08); color: #f8fafc;
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 999px;
-      padding: 6px 10px; margin-top: 14px; font-size: 13px;
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 4vw, 42px);
+      line-height: 1.1;
     }
-    .layout { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+
+    .hero p {
+      margin: 0;
+      color: #cbd5e1;
+      max-width: 860px;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .hero-footer {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
     .card {
-      background: var(--card); color: var(--text); border-radius: var(--radius);
-      box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5);
+      background: var(--card);
+      color: var(--text);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.5);
     }
-    .panel { padding: 22px; position: sticky; top: 18px; }
-    .panel h2, .quiz h2 { margin: 0 0 18px; font-size: 22px; }
+
+    .panel {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .panel h2, .quiz h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+    }
+
     .group { margin-bottom: 16px; }
-    .group label { display: block; font-weight: 700; margin-bottom: 8px; color: #1e293b; }
-    .help, .legend { color: var(--muted); font-size: 13px; line-height: 1.5; margin-top: 7px; }
+
+    .group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    .help {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 7px;
+    }
+
     input, select, button { font: inherit; }
+
     input[type="number"], input[type="text"], input[type="password"], select {
-      width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border);
-      background: #fff; outline: none; transition: 0.2s ease;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      outline: none;
+      transition: 0.2s ease;
     }
+
     input:focus, select:focus {
-      border-color: #93c5fd; box-shadow: 0 0 0 4px rgba(59,130,246,0.14);
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
     }
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .checkbox-row, .status-box {
-      background: #f8fafc; border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
-    .checkbox-row { display:flex; gap:10px; align-items:center; }
+
+    .checkbox-card {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .checkbox-card input {
+      margin-top: 2px;
+      flex: 0 0 auto;
+    }
+
+    .checkbox-card label {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .checkbox-card .small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+
+    .login-box {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: #f8fafc;
+      display: none;
+    }
+
+    .login-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .login-row input { flex: 1 1 auto; }
+
     .btn {
-      width: 100%; border: 0; border-radius: 16px; padding: 13px 16px; cursor: pointer;
-      font-weight: 800; transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 16px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
+
     .btn:hover { transform: translateY(-1px); }
     .btn:active { transform: translateY(0); }
+
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: white; box-shadow: 0 12px 24px rgba(37,99,235,0.26);
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: white;
+      box-shadow: 0 12px 24px rgba(37,99,235,0.26);
     }
-    .btn-secondary { background: #e2e8f0; color: #0f172a; margin-top: 10px; }
-    .quiz { padding: 22px; min-height: 560px; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
-    .stat { background:#f8fafc; border:1px solid var(--border); border-radius:18px; padding:14px; }
-    .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-    .stat .value { font-size: 24px; font-weight: 800; }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+      margin-top: 10px;
+    }
+
+    .btn-login {
+      width: auto;
+      min-width: 120px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 0 18px;
+    }
+
+    .status-msg {
+      margin-top: 10px;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .status-msg.ok { display: block; background: #f0fdf4; color: var(--success); border: 1px solid #86efac; }
+    .status-msg.bad { display: block; background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; }
+    .status-msg.info { display: block; background: #eff6ff; color: var(--primary2); border: 1px solid #93c5fd; }
+
+    .quiz {
+      padding: 22px;
+      min-height: 580px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+
+    .stat .value {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
     .question-card {
       background: linear-gradient(180deg, #ffffff, #f8fbff);
-      border: 1px solid var(--border); border-radius: 22px; padding: 22px; margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 22px;
+      margin-top: 8px;
     }
-    .pill-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
     .pill {
-      display:inline-flex; align-items:center; border-radius:999px; padding:7px 12px;
-      font-size:13px; font-weight:700;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
     }
-    .pill.topic { background:#dbeafe; color:#1d4ed8; }
-    .pill.level { background:#ede9fe; color:#6d28d9; }
-    .pill.ct { background:#fef3c7; color:#92400e; }
-    .pill.type { background:#e2e8f0; color:#334155; }
-    .question-title { font-size: clamp(20px, 3vw, 28px); line-height: 1.3; margin: 10px 0 18px; color:#0f172a; }
-    .choices { display:grid; gap:12px; }
+
+    .pill.topic { background: #dbeafe; color: #1d4ed8; }
+    .pill.level { background: #ede9fe; color: #6d28d9; }
+    .pill.type { background: #e2e8f0; color: #334155; }
+
+    .question-title {
+      font-size: clamp(20px, 3vw, 28px);
+      line-height: 1.3;
+      margin: 10px 0 18px;
+      color: #0f172a;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
     .choice-btn {
-      width:100%; border:1px solid var(--border); background:white; border-radius:16px;
-      padding:14px 16px; text-align:left; cursor:pointer; font-weight:700; transition:.18s ease;
+      width: 100%;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 700;
+      transition: .18s ease;
     }
+
     .choice-btn:hover:not(:disabled) {
-      border-color:#93c5fd; box-shadow:0 8px 18px rgba(148,163,184,.18); transform: translateY(-1px);
+      border-color: #93c5fd;
+      box-shadow: 0 8px 18px rgba(148,163,184,.18);
+      transform: translateY(-1px);
     }
-    .choice-btn.correct { background:#f0fdf4; border-color:#86efac; color:#166534; }
-    .choice-btn.wrong { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
-    .answer-form { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
-    .answer-form input { flex:1 1 240px; min-width:220px; }
+
+    .choice-btn.correct {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    .choice-btn.wrong {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
+    }
+
+    .answer-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .answer-form input {
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+
     .inline-btn {
-      border:0; border-radius:14px; padding:12px 18px; cursor:pointer; font-weight:800;
-      background:var(--primary); color:white;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 800;
+      background: var(--primary);
+      color: white;
     }
-    .ghost { background:#fff; border:1px solid var(--border); color:#0f172a; }
-    .feedback { margin-top:16px; border-radius:16px; padding:14px 16px; font-weight:700; display:none; }
-    .feedback.ok { display:block; background:#f0fdf4; color:var(--ok); border:1px solid #86efac; }
-    .feedback.bad { display:block; background:#fef2f2; color:var(--bad); border:1px solid #fca5a5; }
-    .feedback.info { display:block; background:#eff6ff; color:#1d4ed8; border:1px solid #93c5fd; }
-    .feedback.warn { display:block; background:#fff7ed; color:var(--warn); border:1px solid #fdba74; }
-    .subtle { color: var(--muted); line-height: 1.6; }
-    .next-row { margin-top: 18px; display:flex; gap:10px; flex-wrap:wrap; }
-    .empty-state { padding:34px 12px; text-align:center; color:var(--muted); }
-    .footer { text-align:center; color:#cbd5e1; margin-top:24px; font-size:14px; }
-    .hidden { display: none; }
+
+    .ghost {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: #0f172a;
+    }
+
+    .feedback {
+      margin-top: 16px;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .feedback.ok { display: block; background: #f0fdf4; color: var(--success); border: 1px solid #86efac; }
+    .feedback.bad { display: block; background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; }
+    .feedback.info { display: block; background: #eff6ff; color: var(--primary2); border: 1px solid #93c5fd; }
+
+    .subtle {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .next-row {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      padding: 34px 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .footer {
+      text-align: center;
+      color: #cbd5e1;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+
     @media (max-width: 960px) {
       .layout { grid-template-columns: 1fr; }
       .panel { position: static; }
       .stats { grid-template-columns: repeat(2, 1fr); }
     }
+
     @media (max-width: 640px) {
-      .stats, .row-2 { grid-template-columns: 1fr; }
+      .stats, .row-2, .login-row { grid-template-columns: 1fr; display: grid; }
       .hero, .panel, .quiz { padding: 18px; }
       .question-card { padding: 16px; }
+      .btn-login { width: 100%; min-height: 46px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <section class="hero">
-      <h1>Történelem évszámgyakorló</h1>
+      <h1>Történelem - évszámok gyakorlása</h1>
       <p>
-        Játékos gyakorlóalkalmazás felső tagozattól versenyzői szintig. Az oldal induláskor automatikusan
-        beolvassa az <strong>adatok.xlsx</strong> fájlt, majd a kiválasztott szint és szűrők alapján készít feladatokat.
+        Játékos gyakorlóalkalmazás felső tagozattól versenyzői szintig.
+        Gyakorlás során add meg a kiválasztott szintet és állítsd be a szűrőket.
       </p>
-      <div class="badge">4 szint • automatikus Excel-betöltés • GitHub Pages-kompatibilis</div>
+      <div class="hero-footer">Fejlesztők: Makra Lajos, Pálfi Tamás, Kenéz Bence</div>
     </section>
 
     <div class="layout">
       <aside class="card panel">
         <h2>Beállítások</h2>
-
-        <div class="group">
-          <label>Adatforrás</label>
-          <div class="status-box">
-            <div id="loadStatus"><strong>Betöltés folyamatban...</strong></div>
-            <div class="legend">
-              Az alkalmazás kizárólag az ugyanebben a mappában lévő <strong>adatok.xlsx</strong> fájlt használja.
-            </div>
-          </div>
-        </div>
 
         <div class="group">
           <label for="levelFilter">Szint</label>
@@ -174,13 +437,18 @@
             <option value="emelt">Emelt szint</option>
             <option value="versenyzoi">Versenyzői</option>
           </select>
-          <div class="help">Csak azok a rekordok jelennek meg, ahol az adott oszlopban <strong>x</strong> szerepel.</div>
+          <div class="help">A kiválasztott szinthez tartozó x jelöléseket használja a program az Excelből.</div>
         </div>
 
-        <div class="group hidden" id="passwordGroup">
-          <label for="competitionPassword">Versenyzői jelszó</label>
-          <input id="competitionPassword" type="password" placeholder="Add meg a jelszót" />
-          <div class="help">A versenyzői szint csak jelszóval indítható el.</div>
+        <div class="group">
+          <div id="competitionBox" class="login-box">
+            <label for="competitionPassword">Versenyzői jelszó</label>
+            <div class="login-row">
+              <input id="competitionPassword" type="password" placeholder="Írd be a jelszót" />
+              <button id="competitionLoginBtn" class="btn-login" type="button">Belépés</button>
+            </div>
+            <div id="competitionStatus" class="status-msg info">A versenyzői szint eléréséhez belépés szükséges.</div>
+          </div>
         </div>
 
         <div class="group">
@@ -212,7 +480,6 @@
             <option value="3">3. Jelöld meg a helyes eseményt</option>
             <option value="4">4. Random (kevert)</option>
           </select>
-          <div class="help">A gépelős feladat csak egyértelmű évszámoknál és évszámtartományoknál marad gépelős; a bonyolultabb dátumoknál automatikusan feleletválasztósra vált.</div>
         </div>
 
         <div class="group">
@@ -221,8 +488,25 @@
           <div class="help">A szűrt rekordokból véletlenszerűen választ a program.</div>
         </div>
 
+        <div class="checkbox-card">
+          <input id="uniqueYearsOnly" type="checkbox" checked />
+          <label for="uniqueYearsOnly">
+            Egy évszám egyszer szerepeljen
+            <span class="small">Az azonos évszámú rekordokból csak egy jelenik meg ugyanabban a körben.</span>
+          </label>
+        </div>
+
+        <div class="checkbox-card">
+          <input id="repeatWrongAnswers" type="checkbox" checked />
+          <label for="repeatWrongAnswers">
+            Hibás választ újrakérdezze
+            <span class="small">A rosszul megválaszolt kérdés visszakerül a sor végére.</span>
+          </label>
+        </div>
+
         <button class="btn btn-primary" id="startBtn">Gyakorlás indítása</button>
         <button class="btn btn-secondary" id="restartBtn">Aktuális beállítások újratöltése</button>
+        <div class="help" id="loadStatus" style="margin-top: 12px;"><strong>Az adatok.xlsx betöltése...</strong></div>
       </aside>
 
       <main class="card quiz">
@@ -270,18 +554,23 @@
       score: 0,
       currentQuestion: null,
       answered: false,
+      competitionUnlocked: false,
       defaultFileName: 'adatok.xlsx'
     };
 
     const els = {
       levelFilter: document.getElementById('levelFilter'),
-      passwordGroup: document.getElementById('passwordGroup'),
+      competitionBox: document.getElementById('competitionBox'),
       competitionPassword: document.getElementById('competitionPassword'),
+      competitionLoginBtn: document.getElementById('competitionLoginBtn'),
+      competitionStatus: document.getElementById('competitionStatus'),
       topicFilter: document.getElementById('topicFilter'),
       yearFrom: document.getElementById('yearFrom'),
       yearTo: document.getElementById('yearTo'),
       taskType: document.getElementById('taskType'),
       questionCount: document.getElementById('questionCount'),
+      uniqueYearsOnly: document.getElementById('uniqueYearsOnly'),
+      repeatWrongAnswers: document.getElementById('repeatWrongAnswers'),
       startBtn: document.getElementById('startBtn'),
       restartBtn: document.getElementById('restartBtn'),
       loadStatus: document.getElementById('loadStatus'),
@@ -299,80 +588,59 @@
       return v;
     }
 
-    function normalizeMandatory(value) {
+    function normalizeX(value) {
       return String(value ?? '').trim().toLowerCase() === 'x';
+    }
+
+    function normalizeHeader(value) {
+      return String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ');
+    }
+
+    function looksLikeHeaderRow(row) {
+      if (!Array.isArray(row) || row.length < 3) return false;
+      const joined = row.map(v => normalizeHeader(v)).join(' | ');
+      return joined.includes('temakor') || joined.includes('evszam') || joined.includes('esemeny');
     }
 
     function normalizeYearText(raw) {
       return String(raw ?? '')
         .trim()
-        .toLowerCase()
-        .replace(/körül/g, '')
-        .replace(/küröl/g, '')
-        .replace(/kb\./g, '')
-        .replace(/kb/g, '')
-        .replace(/i\.e\./g, 'kr.e.')
-        .replace(/kr\. e\./g, 'kr.e.')
-        .replace(/kr\.e/g, 'kr.e.')
-        .replace(/kr e/g, 'kr.e.')
         .replace(/–/g, '-')
         .replace(/—/g, '-')
         .replace(/−/g, '-')
         .replace(/\s+/g, ' ')
-        .trim();
+        .replace(/k[uü]r[oö]l/gi, 'körül');
     }
 
-    function centuryRange(century, isBce) {
-      if (isBce) {
-        const start = -(century * 100);
-        const end = -((century - 1) * 100 + 1);
-        return { start: Math.min(start, end), end: Math.max(start, end) };
-      }
-      return { start: (century - 1) * 100 + 1, end: century * 100 };
+    function hasBCE(text) {
+      return /kr\.?\s*e\.?/i.test(text);
     }
 
-    function extractYearCandidates(text) {
-      const candidates = [];
-      const regex = /-?\d{1,4}/g;
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        candidates.push({
-          value: Number(match[0]),
-          raw: match[0],
-          index: match.index
-        });
-      }
-      return candidates;
+    function extractNumericHints(raw) {
+      const text = normalizeYearText(raw);
+      const matches = text.match(/\d+/g) || [];
+      const nums = matches.map(n => Number(n)).filter(n => !Number.isNaN(n));
+      return { text, nums, bce: hasBCE(text) };
     }
 
     function extractRange(raw) {
       if (raw === null || raw === undefined) return null;
-      const original = String(raw).trim();
-      if (!original) return null;
+      const { text, nums, bce } = extractNumericHints(raw);
+      if (!text || !nums.length) return null;
 
-      const text = normalizeYearText(original);
-      const isBce = text.includes('kr.e');
-      const centuryMatch = text.match(/(\d{1,2})\.\s*század|(\d{1,2})\s*század/);
+      const years = nums.filter(n => n > 31 || nums.length === 1);
+      const source = years.length ? years : nums;
+      if (!source.length) return null;
 
-      if (centuryMatch) {
-        const century = Number(centuryMatch[1] || centuryMatch[2]);
-        if (!Number.isNaN(century)) return centuryRange(century, isBce);
-      }
-
-      const candidates = extractYearCandidates(text);
-      if (!candidates.length) return null;
-
-      let yearCandidates = candidates.filter(c => Math.abs(c.value) >= 100);
-      if (!yearCandidates.length) yearCandidates = [candidates[0]];
-
-      let values = yearCandidates.slice(0, 2).map(c => c.value);
-
-      if (isBce) {
-        values = values.map(v => -Math.abs(v));
-      }
-
-      if (values.length === 1) return { start: values[0], end: values[0] };
-      return { start: Math.min(values[0], values[1]), end: Math.max(values[0], values[1]) };
+      const signed = source.map(n => (bce ? -n : n));
+      const start = Math.min(...signed);
+      const end = Math.max(...signed);
+      return { start, end };
     }
 
     function formatYearValue(num) {
@@ -380,54 +648,49 @@
       return num < 0 ? `Kr.e. ${Math.abs(num)}` : `${num}`;
     }
 
-    function formatYearRange(raw) {
-      const text = String(raw ?? '').trim();
-      if (!text) return '';
-      return text;
-    }
-
-    function looksLikeHeaderRow(row) {
-      if (!Array.isArray(row) || row.length < 3) return false;
-      const joined = row.map(v => String(v ?? '').toLowerCase()).join(' | ');
-      return joined.includes('témakör') || joined.includes('temakor') || joined.includes('évszám') || joined.includes('evszam') || joined.includes('esemény') || joined.includes('esemeny');
-    }
-
-    function isTypingFriendly(raw) {
+    function formatYearDisplay(raw) {
       const text = normalizeYearText(raw);
-      if (!text) return false;
-      if (text.includes('század')) return false;
-      if (/[a-záéíóöőúüű]/i.test(text.replace('kr.e.', ''))) return false;
-      const numericParts = text.match(/-?\d{1,4}/g) || [];
-      if (numericParts.length === 1) return true;
-      if (numericParts.length === 2 && /-/.test(text)) return true;
-      return false;
+      if (!text) return '';
+      if (/[a-záéíóöőúüű]/i.test(text.replace(/kr\.?\s*e\.?/ig, ''))) {
+        return text;
+      }
+      const range = extractRange(raw);
+      if (!range) return text;
+      if (range.start === range.end) return formatYearValue(range.start);
+      return `${formatYearValue(range.start)}–${formatYearValue(range.end)}`;
     }
 
-    function buildRecordFromArrayRow(row, index) {
-      if (!Array.isArray(row)) return null;
-      const topic = normalizeTopic(row[0] ?? '');
-      const yearRaw = row[1] ?? '';
-      const event = String(row[2] ?? '').trim();
-      const range = extractRange(yearRaw);
+    function isComplexDate(raw) {
+      const text = normalizeYearText(raw).toLowerCase();
+      return /(jan|feb|márc|marc|ápr|apr|máj|maj|jún|jun|júl|jul|aug|szept|okt|nov|dec|szazad|század|korul|körül|:|\.)/.test(text);
+    }
 
-      if (!topic || !event || !String(yearRaw).trim() || !range) return null;
+    function sanitizeForCompare(text) {
+      return String(text ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/–|—|−/g, '-')
+        .replace(/kr\.?\s*e\.?/g, 'kre')
+        .replace(/k[uü]r[oö]l/g, 'korul')
+        .replace(/\s+/g, '')
+        .replace(/\./g, '');
+    }
 
+    function levelLabel(level) {
       return {
-        id: `${index}-${event}-${String(yearRaw)}`,
-        topic,
-        yearRaw: String(yearRaw).trim(),
-        yearDisplay: formatYearRange(yearRaw),
-        event,
-        start: range.start,
-        end: range.end,
-        typeable: isTypingFriendly(yearRaw),
-        levels: {
-          general: normalizeMandatory(row[3] ?? ''),
-          kozep: normalizeMandatory(row[4] ?? ''),
-          emelt: normalizeMandatory(row[5] ?? ''),
-          versenyzoi: normalizeMandatory(row[6] ?? '')
-        }
-      };
+        general: 'Általános iskola',
+        kozep: 'Középszint',
+        emelt: 'Emelt szint',
+        versenyzoi: 'Versenyzői'
+      }[level] || level;
+    }
+
+    function taskTypeLabel(type) {
+      if (type === '1') return 'Helyes évszám kiválasztása';
+      if (type === '2') return 'Évszám beírása';
+      return 'Helyes esemény kiválasztása';
     }
 
     function escapeHtml(text) {
@@ -444,15 +707,6 @@
       return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
-    function levelLabel(key) {
-      return {
-        general: 'Általános iskola',
-        kozep: 'Középszint',
-        emelt: 'Emelt szint',
-        versenyzoi: 'Versenyzői'
-      }[key] || key;
-    }
-
     function updateStats(filteredCount = state.activePool.length) {
       els.statLoaded.textContent = state.allRecords.length;
       els.statFiltered.textContent = filteredCount || 0;
@@ -460,31 +714,106 @@
       els.statProgress.textContent = `${Math.min(state.currentIndex, state.questions.length)} / ${state.questions.length}`;
     }
 
+    function setCompetitionStatus(type, text) {
+      els.competitionStatus.className = `status-msg ${type}`;
+      els.competitionStatus.textContent = text;
+    }
+
+    function updateCompetitionUI() {
+      const isCompetition = els.levelFilter.value === 'versenyzoi';
+      els.competitionBox.style.display = isCompetition ? 'block' : 'none';
+      if (!isCompetition) return;
+      if (state.competitionUnlocked) {
+        setCompetitionStatus('ok', 'Sikeres a belépés. A versenyzői szint használható.');
+      } else {
+        setCompetitionStatus('info', 'A versenyzői szint eléréséhez belépés szükséges.');
+      }
+    }
+
+    function handleCompetitionLogin() {
+      if (els.competitionPassword.value === COMPETITION_PASSWORD) {
+        state.competitionUnlocked = true;
+        setCompetitionStatus('ok', 'Sikeres a belépés. A versenyzői szint használható.');
+      } else {
+        state.competitionUnlocked = false;
+        setCompetitionStatus('bad', 'Hibás jelszó.');
+      }
+    }
+
+    function parseHeaders(headerRow) {
+      const map = {
+        topic: 0,
+        year: 1,
+        event: 2,
+        general: 3,
+        kozep: 4,
+        emelt: 5,
+        versenyzoi: 6
+      };
+
+      if (!Array.isArray(headerRow)) return map;
+
+      headerRow.forEach((cell, index) => {
+        const h = normalizeHeader(cell);
+        if (h.includes('temakor')) map.topic = index;
+        else if (h.includes('evszam')) map.year = index;
+        else if (h.includes('esemeny')) map.event = index;
+        else if (h.includes('altalanos')) map.general = index;
+        else if (h.includes('kozep')) map.kozep = index;
+        else if (h.includes('emelt')) map.emelt = index;
+        else if (h.includes('versenyzoi')) map.versenyzoi = index;
+      });
+
+      return map;
+    }
+
+    function buildRecordFromArrayRow(row, rowIndex, colMap) {
+      if (!Array.isArray(row)) return null;
+      const topic = normalizeTopic(row[colMap.topic] ?? '');
+      const yearRaw = row[colMap.year] ?? '';
+      const event = String(row[colMap.event] ?? '').trim();
+      const range = extractRange(yearRaw);
+      const yearDisplay = formatYearDisplay(yearRaw);
+
+      if (!topic || !event || !String(yearRaw).trim() || !range) return null;
+
+      return {
+        id: `${rowIndex}-${event}-${String(yearRaw)}`,
+        sourceIndex: rowIndex,
+        topic,
+        yearRaw: String(yearRaw).trim(),
+        yearDisplay,
+        event,
+        start: range.start,
+        end: range.end,
+        general: normalizeX(row[colMap.general]),
+        kozep: normalizeX(row[colMap.kozep]),
+        emelt: normalizeX(row[colMap.emelt]),
+        versenyzoi: normalizeX(row[colMap.versenyzoi]),
+        complexDate: isComplexDate(yearRaw)
+      };
+    }
+
     async function loadDefaultFile() {
       els.loadStatus.innerHTML = '<strong>Az adatok.xlsx betöltése...</strong>';
       try {
         const response = await fetch(state.defaultFileName, { cache: 'no-store' });
         if (!response.ok) throw new Error('Nem található az adatok.xlsx fájl.');
+
         const buffer = await response.arrayBuffer();
         const workbook = XLSX.read(buffer, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[firstSheetName];
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        const headerRow = rows[0] || [];
+        const colMap = parseHeaders(headerRow);
+        const dataRows = looksLikeHeaderRow(headerRow) ? rows.slice(1) : rows;
+        const records = dataRows.map((row, index) => buildRecordFromArrayRow(row, index, colMap)).filter(Boolean);
 
-        const dataRows = looksLikeHeaderRow(rows[0]) ? rows.slice(1) : rows;
-        const records = dataRows.map(buildRecordFromArrayRow).filter(Boolean);
-
-        state.allRecords = records;
+        state.allRecords = records.sort((a, b) => a.start - b.start || a.sourceIndex - b.sourceIndex);
         updateStats();
 
         if (!records.length) {
           els.loadStatus.innerHTML = '<strong>Az Excel fájl betöltődött, de nem találtam értelmezhető rekordot.</strong>';
-          els.quizArea.innerHTML = `
-            <div class="empty-state">
-              <p><strong>Nincs használható adat.</strong></p>
-              <p>Ellenőrizd, hogy az első munkalapon az oszlopok sorrendje ez legyen: A = témakör, B = évszám, C = esemény, D-G = szintenként x vagy üres.</p>
-            </div>
-          `;
           return;
         }
 
@@ -492,7 +821,7 @@
         els.quizArea.innerHTML = `
           <div class="empty-state">
             <p><strong>Minden készen áll.</strong></p>
-            <p>Válassz szintet, állítsd be a szűrőket, majd kattints a <strong>Gyakorlás indítása</strong> gombra.</p>
+            <p>Állítsd be a szűrőket, majd kattints a <strong>Gyakorlás indítása</strong> gombra.</p>
           </div>
         `;
       } catch (error) {
@@ -518,62 +847,79 @@
       return copy;
     }
 
-    function sample(array, count, excludeIds = new Set()) {
-      return shuffle(array.filter(item => !excludeIds.has(item.id))).slice(0, count);
-    }
-
-    function recordMatchesFilters(record) {
-      const level = els.levelFilter.value;
+    function getFilteredPool() {
       const topic = els.topicFilter.value;
+      const level = els.levelFilter.value;
       const fromRaw = els.yearFrom.value;
       const toRaw = els.yearTo.value;
-
-      if (!record.levels[level]) return false;
-      if (topic !== 'mind' && record.topic !== topic) return false;
-
       let from = fromRaw === '' ? Number.NEGATIVE_INFINITY : Number(fromRaw);
       let to = toRaw === '' ? Number.POSITIVE_INFINITY : Number(toRaw);
       if (Number.isNaN(from)) from = Number.NEGATIVE_INFINITY;
       if (Number.isNaN(to)) to = Number.POSITIVE_INFINITY;
       if (from > to) [from, to] = [to, from];
 
-      return record.end >= from && record.start <= to;
+      let pool = state.allRecords.filter(record => {
+        if (topic !== 'mind' && record.topic !== topic) return false;
+        if (!record[level]) return false;
+        return record.end >= from && record.start <= to;
+      });
+
+      if (els.uniqueYearsOnly.checked) {
+        const seen = new Set();
+        pool = pool.filter(record => {
+          const key = sanitizeForCompare(record.yearDisplay);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      return pool;
     }
 
-    function randomTaskType() {
-      const types = ['1', '2', '3'];
+    function pickNearbyDistractors(record, pool, valueSelector) {
+      const index = pool.findIndex(item => item.id === record.id);
+      const candidates = [];
+      const used = new Set([valueSelector(record)]);
+
+      for (let radius = 1; radius <= pool.length; radius++) {
+        const offsets = [index - radius, index + radius];
+        for (const idx of offsets) {
+          if (idx < 0 || idx >= pool.length) continue;
+          if (Math.abs(idx - index) > 3 && candidates.length >= 3) continue;
+          const candidate = pool[idx];
+          const val = valueSelector(candidate);
+          if (!val || used.has(val)) continue;
+          used.add(val);
+          candidates.push(val);
+          if (candidates.length >= 3) return candidates;
+        }
+      }
+
+      return candidates;
+    }
+
+    function randomTaskType(record) {
+      const types = ['1', '3'];
+      if (!record.complexDate) types.push('2');
       return types[Math.floor(Math.random() * types.length)];
     }
 
     function buildQuestionForRecord(record, pool) {
-      let selectedType = els.taskType.value === '4' ? randomTaskType() : els.taskType.value;
-
-      if (selectedType === '2' && !record.typeable) {
-        selectedType = '1';
-      }
+      let selectedType = els.taskType.value === '4' ? randomTaskType(record) : els.taskType.value;
+      if (selectedType === '2' && record.complexDate) selectedType = '1';
 
       if (selectedType === '1') {
-        const distractors = sample(
-          pool.filter(item => item.yearDisplay !== record.yearDisplay),
-          3,
-          new Set([record.id])
-        ).map(item => item.yearDisplay);
-
+        const distractors = pickNearbyDistractors(record, pool, item => item.yearDisplay);
         const choices = shuffle([record.yearDisplay, ...distractors]).slice(0, 4);
-        while (choices.length < 4 && pool.length > choices.length) {
-          const extra = shuffle(pool).find(item => !choices.includes(item.yearDisplay));
-          if (!extra) break;
-          choices.push(extra.yearDisplay);
-        }
-
         return {
           record,
           taskType: selectedType,
           prompt: 'Jelöld meg a helyes évszámot!',
           questionText: record.event,
           correctAnswer: record.yearDisplay,
-          choices: shuffle(choices),
-          autoAdjusted: els.taskType.value === '2' && !record.typeable
+          choices,
+          level: els.levelFilter.value
         };
       }
 
@@ -584,31 +930,21 @@
           prompt: 'Írd be a helyes évszámot!',
           questionText: record.event,
           correctAnswer: record.yearDisplay,
-          autoAdjusted: false
+          rawAnswer: record.yearRaw,
+          level: els.levelFilter.value
         };
       }
 
-      const distractors = sample(
-        pool.filter(item => item.event !== record.event),
-        3,
-        new Set([record.id])
-      ).map(item => item.event);
-
+      const distractors = pickNearbyDistractors(record, pool, item => item.event);
       const choices = shuffle([record.event, ...distractors]).slice(0, 4);
-      while (choices.length < 4 && pool.length > choices.length) {
-        const extra = shuffle(pool).find(item => !choices.includes(item.event));
-        if (!extra) break;
-        choices.push(extra.event);
-      }
-
       return {
         record,
         taskType: selectedType,
         prompt: 'Jelöld meg a helyes eseményt!',
         questionText: record.yearDisplay,
         correctAnswer: record.event,
-        choices: shuffle(choices),
-        autoAdjusted: false
+        choices,
+        level: els.levelFilter.value
       };
     }
 
@@ -618,34 +954,18 @@
       return selected.map(record => buildQuestionForRecord(record, pool));
     }
 
-    function taskTypeLabel(type) {
-      if (type === '1') return 'Helyes évszám kiválasztása';
-      if (type === '2') return 'Évszám beírása';
-      return 'Helyes esemény kiválasztása';
-    }
+    function compareAnswers(userAnswer, correctAnswer, rawAnswer) {
+      const a = sanitizeForCompare(userAnswer);
+      const b = sanitizeForCompare(correctAnswer);
+      const c = sanitizeForCompare(rawAnswer);
+      if (a && (a === b || a === c)) return true;
 
-    function normalizeAnswer(value) {
-      return String(value ?? '')
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/–/g, '-')
-        .replace(/—/g, '-')
-        .replace(/−/g, '-')
-        .replace(/i\.e\./g, 'kr.e.')
-        .replace(/kr\. e\./g, 'kr.e.')
-        .replace(/kr\.e/g, 'kr.e.')
-        .replace(/\.$/, '');
-    }
-
-    function compareAnswers(userAnswer, correctAnswer) {
-      const a = normalizeAnswer(userAnswer);
-      const b = normalizeAnswer(correctAnswer);
-      if (a === b) return true;
-
-      const userRange = extractRange(userAnswer);
-      const correctRange = extractRange(correctAnswer);
-      return !!userRange && !!correctRange && userRange.start === correctRange.start && userRange.end === correctRange.end;
+      const ur = extractRange(userAnswer);
+      const cr = extractRange(correctAnswer);
+      const rr = extractRange(rawAnswer);
+      if (ur && cr && ur.start === cr.start && ur.end === cr.end) return true;
+      if (ur && rr && ur.start === rr.start && ur.end === rr.end) return true;
+      return false;
     }
 
     function showFeedback(type, html) {
@@ -664,7 +984,7 @@
         els.quizArea.innerHTML = `
           <div class="empty-state">
             <p><strong>Nincs megjeleníthető kérdés.</strong></p>
-            <p>Ellenőrizd a szűrőket, vagy az Excel fájl tartalmát.</p>
+            <p>Ellenőrizd a szűrőket vagy a kiválasztott szintet.</p>
           </div>
         `;
         return;
@@ -695,7 +1015,7 @@
         <div class="question-card">
           <div class="pill-row">
             <span class="pill topic">${capitalize(q.record.topic)}</span>
-            <span class="pill level">${levelLabel(els.levelFilter.value)}</span>
+            <span class="pill level">${levelLabel(q.level)}</span>
             <span class="pill type">${taskTypeLabel(q.taskType)}</span>
           </div>
           <div class="subtle">${q.prompt}</div>
@@ -717,10 +1037,6 @@
         content += '</div>';
       }
 
-      if (q.autoAdjusted) {
-        content += `<div class="feedback warn" style="display:block;">Ehhez a rekordhoz a gépeléses mód automatikusan feleletválasztósra váltott, mert az évszám formátuma nem egyértelmű.</div>`;
-      }
-
       content += `
           <div id="feedbackBox" class="feedback"></div>
           <div class="next-row" id="nextRow" style="display:none;">
@@ -736,17 +1052,22 @@
         document.querySelectorAll('.choice-btn').forEach(button => {
           button.addEventListener('click', () => {
             const index = Number(button.dataset.choiceIndex);
-            const choice = q.choices[index];
-            submitChoice(button, choice);
+            submitChoice(button, q.choices[index]);
           });
         });
       }
     }
 
+    function requeueIfNeeded(question) {
+      if (!els.repeatWrongAnswers.checked) return;
+      const clone = JSON.parse(JSON.stringify(question));
+      clone.repeated = true;
+      state.questions.push(clone);
+    }
+
     function submitChoice(button, choice) {
       if (state.answered) return;
       state.answered = true;
-
       const q = state.currentQuestion;
       const buttons = Array.from(document.querySelectorAll('.choice-btn'));
       buttons.forEach(btn => {
@@ -754,13 +1075,14 @@
         if (btn.textContent === q.correctAnswer) btn.classList.add('correct');
       });
 
-      const correct = compareAnswers(choice, q.correctAnswer);
+      const correct = compareAnswers(choice, q.correctAnswer, q.rawAnswer || q.correctAnswer);
       if (correct) {
         state.score += 1;
         button.classList.add('correct');
         showFeedback('ok', `Helyes válasz! A megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
       } else {
         button.classList.add('wrong');
+        requeueIfNeeded(q);
         showFeedback('bad', `Nem ez a helyes válasz. A jó megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
       }
       updateStats(state.activePool.length);
@@ -777,13 +1099,14 @@
 
       state.answered = true;
       const q = state.currentQuestion;
-      const correct = compareAnswers(userAnswer, q.correctAnswer);
+      const correct = compareAnswers(userAnswer, q.correctAnswer, q.rawAnswer);
       if (input) input.disabled = true;
 
       if (correct) {
         state.score += 1;
         showFeedback('ok', `Helyes válasz! A megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
       } else {
+        requeueIfNeeded(q);
         showFeedback('bad', `Sajnos nem pontos. A jó megoldás: <strong>${escapeHtml(q.correctAnswer)}</strong>.`);
       }
       updateStats(state.activePool.length);
@@ -792,15 +1115,6 @@
     function nextQuestion() {
       state.currentIndex += 1;
       renderCurrentQuestion();
-    }
-
-    function validateCompetitionPassword() {
-      if (els.levelFilter.value !== 'versenyzoi') return true;
-      return els.competitionPassword.value === COMPETITION_PASSWORD;
-    }
-
-    function showPasswordField() {
-      els.passwordGroup.classList.toggle('hidden', els.levelFilter.value !== 'versenyzoi');
     }
 
     function startQuiz() {
@@ -814,17 +1128,13 @@
         return;
       }
 
-      if (!validateCompetitionPassword()) {
-        els.quizArea.innerHTML = `
-          <div class="empty-state">
-            <p><strong>Hibás versenyzői jelszó.</strong></p>
-            <p>A versenyzői szint indításához add meg a helyes jelszót.</p>
-          </div>
-        `;
+      if (els.levelFilter.value === 'versenyzoi' && !state.competitionUnlocked) {
+        updateCompetitionUI();
+        setCompetitionStatus('bad', 'Előbb lépj be a versenyzői szinthez.');
         return;
       }
 
-      const filtered = state.allRecords.filter(recordMatchesFilters);
+      const filtered = getFilteredPool();
       state.activePool = filtered;
       state.questions = [];
       state.currentIndex = 0;
@@ -853,11 +1163,20 @@
     window.nextQuestion = nextQuestion;
     window.restartQuiz = restartQuiz;
 
-    els.levelFilter.addEventListener('change', showPasswordField);
+    els.levelFilter.addEventListener('change', () => {
+      if (els.levelFilter.value !== 'versenyzoi') {
+        els.competitionPassword.value = '';
+      }
+      updateCompetitionUI();
+    });
+    els.competitionLoginBtn.addEventListener('click', handleCompetitionLogin);
+    els.competitionPassword.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') handleCompetitionLogin();
+    });
     els.startBtn.addEventListener('click', startQuiz);
     els.restartBtn.addEventListener('click', startQuiz);
 
-    showPasswordField();
+    updateCompetitionUI();
     loadDefaultFile();
   </script>
 </body>
